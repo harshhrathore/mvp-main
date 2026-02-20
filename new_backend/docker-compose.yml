@@ -1,0 +1,224 @@
+version: '3.8'
+
+# ══════════════════════════════════════════════════════════════
+# SAMA WELLNESS - MICROSERVICES DOCKER COMPOSE
+# ══════════════════════════════════════════════════════════════
+# This Docker Compose file orchestrates all services in the
+# Sama Wellness microservices architecture with proper health
+# checks, dependency management, and Windows compatibility.
+#
+# Services:
+#   - checkin-chat: FastAPI service for Ayurvedic wellness check-ins
+#   - checkin-voice: Python service for real-time voice AI interactions
+#   - api-gateway: Express.js API Gateway (new_backend)
+#   - frontend: React + Vite web application
+#
+# Usage:
+#   Development: docker-compose up
+#   Production:  docker-compose -f docker-compose.yml up -d
+#
+# Requirements: Docker Desktop with WSL2 backend (Windows)
+# ══════════════════════════════════════════════════════════════
+
+services:
+  # ────────────────────────────────────────────────────────────
+  # CHECKIN CHAT SERVICE (FastAPI)
+  # ────────────────────────────────────────────────────────────
+  checkin-chat:
+    build:
+      context: ./checkin-chat/files
+      dockerfile: Dockerfile
+    container_name: sama-checkin-chat
+    ports:
+      - "${CHECKIN_CHAT_PORT:-8000}:8000"
+    environment:
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+      
+      # API Keys
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ASSEMBLYAI_API_KEY=${ASSEMBLYAI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID}
+      
+      # Service Configuration
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+      - PORT=8000
+      
+      # CORS
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5000}
+    volumes:
+      # Windows-compatible volume mounts (use forward slashes)
+      - ./checkin-chat/files/app:/app/app:rw
+      - ./checkin-chat/files/migrations:/app/migrations:rw
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - sama-network
+
+  # ────────────────────────────────────────────────────────────
+  # CHECKIN VOICE SERVICE (Python)
+  # ────────────────────────────────────────────────────────────
+  checkin-voice:
+    build:
+      context: ./checkin-voice/sama-voice-agentcode/local-voice-ai-agent
+      dockerfile: Dockerfile
+    container_name: sama-checkin-voice
+    ports:
+      - "${CHECKIN_VOICE_PORT:-8001}:8001"
+    environment:
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+      
+      # API Keys
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ASSEMBLYAI_API_KEY=${ASSEMBLYAI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID}
+      
+      # Service Configuration
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+      - PORT=8001
+      
+      # CORS
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5000}
+    volumes:
+      # Windows-compatible volume mounts
+      - ./checkin-voice/sama-voice-agentcode/local-voice-ai-agent:/app:rw
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - sama-network
+
+  # ────────────────────────────────────────────────────────────
+  # API GATEWAY (Express.js - new_backend)
+  # ────────────────────────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ./new_backend
+      dockerfile: Dockerfile
+    container_name: sama-api-gateway
+    ports:
+      - "${API_GATEWAY_PORT:-5000}:5000"
+    environment:
+      # Database
+      - DATABASE_URL=${DATABASE_URL}
+      
+      # Service URLs (Docker internal networking)
+      - CHECKIN_CHAT_URL=http://checkin-chat:8000
+      - CHECKIN_VOICE_URL=http://checkin-voice:8001
+      
+      # JWT & Security
+      - JWT_SECRET=${JWT_SECRET}
+      
+      # API Keys (for direct endpoints)
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - BERT_API_URL=${BERT_API_URL}
+      - BERT_API_KEY=${BERT_API_KEY}
+      
+      # Email Configuration
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+      - EMAIL_FROM=${EMAIL_FROM}
+      
+      # Service Configuration
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+      - PORT=5000
+      
+      # CORS
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      
+      # Rate Limiting
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+      - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
+      
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+    volumes:
+      # Windows-compatible volume mounts
+      - ./new_backend/src:/app/src:rw
+      - ./new_backend/dist:/app/dist:rw
+    depends_on:
+      checkin-chat:
+        condition: service_healthy
+      checkin-voice:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/api/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1); })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - sama-network
+
+  # ────────────────────────────────────────────────────────────
+  # FRONTEND (React + Vite)
+  # ────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sama-frontend
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      # API Gateway URL (Docker internal networking)
+      - VITE_API_URL=http://api-gateway:5000
+      
+      # Service Configuration
+      - NODE_ENV=${NODE_ENV:-development}
+    volumes:
+      # Windows-compatible volume mounts
+      - ./frontend/src:/app/src:rw
+      - ./frontend/public:/app/public:rw
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - sama-network
+
+# ══════════════════════════════════════════════════════════════
+# NETWORKS
+# ══════════════════════════════════════════════════════════════
+networks:
+  sama-network:
+    driver: bridge
+    name: sama-network
+
+# ══════════════════════════════════════════════════════════════
+# VOLUMES (Optional - for persistent data)
+# ══════════════════════════════════════════════════════════════
+# Uncomment if you want to persist data between container restarts
+# volumes:
+#   postgres_data:
+#     driver: local

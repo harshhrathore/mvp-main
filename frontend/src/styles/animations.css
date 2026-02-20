@@ -1,0 +1,185 @@
+/* ----------- FADE & LIFT ----------- */
+.fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.fade-up {
+  animation: fadeUp 0.7s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ----------- SOFT HOVER ----------- */
+.soft-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.soft-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+/* ----------- PULSE (CALM) ----------- */
+.pulse-soft {
+  animation: pulseSoft 4s ease-in-out infinite;
+}
+
+@keyframes pulseSoft {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* ----------- BUTTON FEEDBACK ----------- */
+.press {
+  transition: transform 0.15s ease;
+}
+
+.press:active {
+  transform: scale(0.96);
+}
+
+/* ----------- PREMIUM MICRO-ANIMATIONS ----------- */
+.scale-in {
+  animation: scaleIn 0.35s ease forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.shimmer {
+  background-size: 200% 100%;
+  animation: shimmerMove 1.8s ease-in-out infinite;
+}
+
+@keyframes shimmerMove {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ----------- PREMIUM BACKGROUND MOTION ----------- */
+.kenburns-soft {
+  transform-origin: center;
+  animation: kenBurnsSoft 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes kenBurnsSoft {
+  from {
+    transform: scale(1.03) translateY(0px);
+  }
+  to {
+    transform: scale(1.10) translateY(-12px);
+  }
+}
+
+.gradient-shift {
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.glow-soft {
+  animation: glowSoft 3s ease-in-out infinite;
+}
+
+@keyframes glowSoft {
+  0%, 100% {
+    box-shadow: 0 0 28px rgba(143, 169, 143, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 55px rgba(143, 169, 143, 0.62);
+  }
+}
+
+/* ----------- SHARED KEYFRAMES (USED BY PAGES) ----------- */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes subtleFloat {
+  0%, 100% {
+    transform: translate(-50%, -50%) translateY(0px);
+  }
+  50% {
+    transform: translate(-50%, -50%) translateY(-10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .fade-up,
+  .pulse-soft,
+  .press,
+  .scale-in,
+  .shimmer,
+  .kenburns-soft,
+  .gradient-shift {
+    animation: none !important;
+    transition: none !important;
+  }
+}

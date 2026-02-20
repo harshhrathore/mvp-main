@@ -1,0 +1,26 @@
+{
+  "name": "sama-wellness-orchestrator",
+  "version": "1.0.0",
+  "description": "Sama Wellness - Unified microservices orchestration",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n \"checkin-chat,checkin-voice,backend,frontend\" -c \"cyan,magenta,green,blue\" \"npm run dev:checkin-chat\" \"npm run dev:checkin-voice\" \"npm run dev:backend-wait\" \"npm run dev:frontend-wait\"",
+    "dev:checkin-chat": "cd checkin-chat/files && cross-env PORT=8000 python -m uvicorn app.main:app --reload --port 8000",
+    "dev:checkin-voice": "cd checkin-voice && cross-env PORT=8001 python main.py",
+    "dev:backend": "cd new_backend && npm run dev",
+    "dev:backend-wait": "wait-on tcp:8000 && cd new_backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:frontend-wait": "wait-on http://localhost:5000/health && cd frontend && npm run dev",
+    "health-check": "node scripts/health-check.js",
+    "health-check:all": "node scripts/health-check.js --all",
+    "install:all": "npm install && cd new_backend && npm install && cd frontend && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "wait-on": "^7.2.0"
+  },
+  "dependencies": {
+    "ollama": "^0.6.3"
+  }
+}

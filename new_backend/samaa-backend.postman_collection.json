@@ -1,0 +1,513 @@
+{
+  "info": {
+    "name": "SAMAA Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1 - HEALTH",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/api/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 - AUTH",
+      "item": [
+        {
+          "name": "Register new user",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya@samaa.app\",\n  \"password\": \"Test1234\",\n  \"gender\": \"female\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login — auto saves token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const j = pm.response.json();",
+                  "if (j.token) {",
+                  "  pm.collectionVariables.set('token', j.token);",
+                  "  console.log('Token saved');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"priya@samaa.app\",\n  \"password\": \"Test1234\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login — wrong password (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"priya@samaa.app\",\n  \"password\": \"WrongPass\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login — user not found (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nobody@samaa.app\",\n  \"password\": \"Test1234\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/login",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Register — duplicate email (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya@samaa.app\",\n  \"password\": \"Test1234\",\n  \"gender\": \"female\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Register — invalid fields (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"notanemail\",\n  \"password\": \"ab\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/auth/register",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "auth", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 - CHAT",
+      "item": [
+        {
+          "name": "Send message",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"I am feeling anxious today\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/chat/send",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "chat", "send"]
+            }
+          }
+        },
+        {
+          "name": "Send message — no token (expect 401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/chat/send",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "chat", "send"]
+            }
+          }
+        },
+        {
+          "name": "Send message — empty body (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/chat/send",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "chat", "send"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - CHECKIN",
+      "item": [
+        {
+          "name": "Checkin — anxious",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Had a rough morning feeling stressed\",\n  \"emotion\": \"anxiety\",\n  \"dosha\": \"Vata\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/checkin",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "checkin"]
+            }
+          }
+        },
+        {
+          "name": "Checkin — happy",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Great day feeling wonderful\",\n  \"emotion\": \"joy\",\n  \"dosha\": \"Pitta\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/checkin",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "checkin"]
+            }
+          }
+        },
+        {
+          "name": "Checkin — calm",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Feeling calm after meditation\",\n  \"emotion\": \"calm\",\n  \"dosha\": \"Kapha\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/checkin",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "checkin"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 - ACTIVITY",
+      "item": [
+        {
+          "name": "Log activity — yoga",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"yoga\",\n  \"name\": \"Morning Yoga Flow\",\n  \"moodBefore\": 4,\n  \"moodAfter\": 7\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/activity",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "activity"]
+            }
+          }
+        },
+        {
+          "name": "Log activity — pranayama",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"pranayama\",\n  \"name\": \"Nadi Shodhana\",\n  \"moodBefore\": 3,\n  \"moodAfter\": 8\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/activity",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "activity"]
+            }
+          }
+        },
+        {
+          "name": "Log activity — meditation",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"meditation\",\n  \"name\": \"Guided Meditation 10 min\",\n  \"moodBefore\": 5,\n  \"moodAfter\": 9\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/activity",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "activity"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 - QUIZ",
+      "item": [
+        {
+          "name": "Quiz — Vata dominant",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    { \"dosha\": \"Vata\",  \"weight\": 3 },\n    { \"dosha\": \"Vata\",  \"weight\": 3 },\n    { \"dosha\": \"Vata\",  \"weight\": 3 },\n    { \"dosha\": \"Pitta\", \"weight\": 2 },\n    { \"dosha\": \"Kapha\", \"weight\": 1 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/quiz/submit",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "quiz", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Quiz — Pitta dominant",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    { \"dosha\": \"Pitta\", \"weight\": 3 },\n    { \"dosha\": \"Pitta\", \"weight\": 3 },\n    { \"dosha\": \"Pitta\", \"weight\": 3 },\n    { \"dosha\": \"Vata\",  \"weight\": 1 },\n    { \"dosha\": \"Kapha\", \"weight\": 2 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/quiz/submit",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "quiz", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Quiz — Kapha dominant",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answers\": [\n    { \"dosha\": \"Kapha\", \"weight\": 3 },\n    { \"dosha\": \"Kapha\", \"weight\": 3 },\n    { \"dosha\": \"Kapha\", \"weight\": 3 },\n    { \"dosha\": \"Vata\",  \"weight\": 1 },\n    { \"dosha\": \"Pitta\", \"weight\": 1 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/api/quiz/submit",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "quiz", "submit"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7 - RECOMMENDATIONS",
+      "item": [
+        {
+          "name": "Get — Vata",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/recommendations?dosha=Vata",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "recommendations"],
+              "query": [{ "key": "dosha", "value": "Vata" }]
+            }
+          }
+        },
+        {
+          "name": "Get — Pitta",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/recommendations?dosha=Pitta",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "recommendations"],
+              "query": [{ "key": "dosha", "value": "Pitta" }]
+            }
+          }
+        },
+        {
+          "name": "Get — Kapha",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/recommendations?dosha=Kapha",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "recommendations"],
+              "query": [{ "key": "dosha", "value": "Kapha" }]
+            }
+          }
+        },
+        {
+          "name": "Get — Balanced",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "http://localhost:5000/api/recommendations?dosha=Balanced",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["api", "recommendations"],
+              "query": [{ "key": "dosha", "value": "Balanced" }]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

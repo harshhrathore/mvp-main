@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@layer utilities {
+  .float-slow {
+    animation: float-slow 6s ease-in-out infinite;
+  }
+
+  .breathe {
+    animation: breathe 3s ease-in-out infinite;
+  }
+}
+
+@keyframes float-slow {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(3deg);
+  }
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}

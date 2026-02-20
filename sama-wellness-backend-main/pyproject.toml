@@ -1,0 +1,31 @@
+[project]
+name = "sama-wellness"
+version = "1.0.0"
+description = "AI-powered wellness chatbot and voice assistant"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.104.1,<0.115.0",
+    "uvicorn[standard]>=0.24.0,<0.30.0",
+    "sqlalchemy>=2.0.46,<2.1.0",
+    "aiosqlite>=0.19.0,<1.0.0",
+    "pydantic>=2.0.0,<3.0.0",
+    "pydantic-settings>=2.0.0,<3.0.0",
+    "python-dotenv>=1.0.0,<2.0.0",
+    "httpx>=0.25.0,<0.28.0",
+    "python-multipart>=0.0.6,<0.1.0",
+    "aiofiles>=23.2.1,<24.0.0",
+    "ollama>=0.6.1,<1.0.0",
+    "typing-extensions>=4.5.0",
+    "greenlet>=3.0.0",
+]
+
+[project.optional-dependencies]
+postgresql = [
+    "asyncpg>=0.29.0,<0.30.0",
+    "psycopg2-binary>=2.9.9,<3.0.0",
+]
+audio = [
+    "assemblyai>=0.25.0,<1.0.0",
+    "elevenlabs>=0.2.25,<1.0.0",
+]
