@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import React, { createContext, useContext, type ReactNode } from "react";
 import ErrorToast from "../components/ErrorToast";
 import type { ToastError } from "../components/ErrorToast";
 import { useErrorToast } from "../hooks/useErrorToast";
