@@ -193,12 +193,12 @@ export function handleError(error: unknown): string {
   const parsedError = parseError(error);
 
   // Log error in development
-  if (process.env.NODE_ENV === "development") {
+  if (import.meta.env.DEV) {
     console.error("Error:", parsedError);
   }
 
   // Log to error reporting service in production
-  if (process.env.NODE_ENV === "production") {
+  if (import.meta.env.PROD) {
     // logToErrorService(parsedError);
   }
 
