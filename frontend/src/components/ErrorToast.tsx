@@ -102,4 +102,3 @@ const ErrorToast: React.FC<ErrorToastProps> = ({ errors, onDismiss }) => {
 };
 
 export default ErrorToast;
-export type { ToastError };
