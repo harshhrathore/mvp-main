@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import React, { Component, type ErrorInfo, type ReactNode } from "react";
 import { motion } from "framer-motion";
 
 interface Props {
@@ -77,7 +77,7 @@ class ErrorBoundary extends Component<Props, State> {
                 safe.
               </p>
 
-              {process.env.NODE_ENV === "development" && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <details className="mb-4 text-left">
                   <summary className="cursor-pointer text-sm font-semibold mb-2">
                     Error Details (Dev Only)
