@@ -1,48 +1,40 @@
-/**
- * Email Service using Nodemailer with Hostinger SMTP
- * Uses port 465 (SSL) which works on Railway
- */
-
 import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
 import { ensureEnv } from '../config/env';
 
 // Ensure env variables are loaded
 ensureEnv();
 
-let transporter: Transporter | null = null;
+let transporter: nodemailer.Transporter | null = null;
+const emailUser = process.env.EMAIL_USER;
+const emailPass = process.env.EMAIL_PASS;
 
-// Check for Hostinger SMTP credentials
-const smtpHost = process.env.SMTP_HOST;
-const smtpPort = process.env.SMTP_PORT;
-const smtpUser = process.env.SMTP_USER;
-const smtpPass = process.env.SMTP_PASS;
-
-if (smtpHost && smtpPort && smtpUser && smtpPass) {
-  // Use Hostinger SMTP (works on Railway - port 465 SSL)
-  console.log('📧 Initializing Hostinger SMTP email service...');
+if (emailUser && emailPass && !emailUser.includes("your_email") && !emailPass.includes("your_app_password")) {
+  // Create transporter
+  const emailHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
+  const emailPort = parseInt(process.env.EMAIL_PORT || '587');
+  const isSecure = emailPort === 465; // Use SSL for port 465
+  
   transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: parseInt(smtpPort),
-    secure: true, // true for port 465 (SSL)
+    host: emailHost,
+    port: emailPort,
+    secure: isSecure,
     auth: {
-      user: smtpUser,
-      pass: smtpPass,
-    },
-    tls: {
-      rejectUnauthorized: false, // For Railway compatibility
+      user: emailUser,
+      pass: emailPass,
     },
   });
-  console.log('✅ Hostinger SMTP email service ready');
+
+  // Verify transporter connection outputting result asynchronously
+  transporter.verify((error: Error | null, success: boolean) => {
+    if (error) {
+      console.warn('⚠️ Email service connection failed (switching to mock mode):', error.message);
+      transporter = null;
+    } else {
+      console.log('✅ Email service ready');
+    }
+  });
 } else {
-  console.warn(
-    '⚠️ Email credentials not configured. Email service will run in MOCK mode (logging to console).'
-  );
-  console.warn('💡 For Railway deployment, set these environment variables:');
-  console.warn('   SMTP_HOST=smtp.hostinger.com');
-  console.warn('   SMTP_PORT=465');
-  console.warn('   SMTP_USER=noreply@samawellness.ai');
-  console.warn('   SMTP_PASS=your_hostinger_password');
+  console.warn("⚠️ Email credentials not configured. Email service will run in MOCK mode (logging to console).");
 }
 
 interface SendEmailParams {
@@ -56,33 +48,29 @@ interface SendEmailParams {
  */
 export async function sendEmail({ to, subject, html }: SendEmailParams): Promise<void> {
   if (!transporter) {
-    console.log(
-      `\n[MOCK EMAIL] To: ${to}\nSubject: ${subject}\nContent-Length: ${html.length} chars\n`
-    );
+    console.log(`\n[MOCK EMAIL] To: ${to}\nSubject: ${subject}\nContent-Length: ${html.length} chars\n`);
     return;
   }
 
-  const fromEmail = process.env.SMTP_USER;
   const mailOptions = {
-    from: `"SAMA Wellness" <${fromEmail}>`,
+    from: `"SAMA Wellness" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`📧 Verification email sent to ${to}`);
-    console.log(`✅ Message ID: ${info.messageId}`);
+    await transporter.sendMail(mailOptions);
+    console.log(`✉️  Email sent successfully to ${to}`);
   } catch (error: any) {
-    console.error('❌ Email sending failed:', error.message);
+    console.error('Failed to send email:', error.message);
     throw new Error('Failed to send email');
   }
 }
 
 // Export as service object for compatibility
 export const emailService = {
-  sendEmail,
+  sendEmail
 };
 
 /**
