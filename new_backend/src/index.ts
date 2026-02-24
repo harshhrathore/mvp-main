@@ -25,6 +25,9 @@ import dashboardRoutes      from "./routes/dashboardRoutes";
 
 const app = express();
 
+// Trust proxy - Required for Railway/Heroku/Vercel deployments
+app.set('trust proxy', 1);
+
 // CORS 
 app.use(
   cors({
